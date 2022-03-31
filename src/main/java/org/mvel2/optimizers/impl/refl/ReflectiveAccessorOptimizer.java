@@ -384,7 +384,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
               addAccessorNode(new NullSafe(expr, cursor + os, end - cursor - os, pCtx));
               if (curr == null) break;
             }
-            if (curr == null) throw new NullPointerException();
+            //if (curr == null) throw new NullPointerException();
           }
           staticAccess = false;
         }
@@ -699,7 +699,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
       if (ctx == null) {
-        throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start, pCtx);
+        //空值不报错
+        addAccessorNode(new VariableAccessor(property));
+        return variableFactory.getVariableResolver(property).getValue();
+        //throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start, pCtx);
       }
       else {
         throw new PropertyAccessException("could not access: " + property + "; in class: "
