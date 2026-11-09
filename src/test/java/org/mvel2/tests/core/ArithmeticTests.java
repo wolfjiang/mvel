@@ -12,6 +12,7 @@ import org.mvel2.util.Make;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -1071,6 +1072,33 @@ public class ArithmeticTests extends AbstractTest {
     Serializable expr = MVEL.compileExpression(str);
     Object result = MVEL.executeExpression(expr, new HashMap<String, Object>());
     assertEquals(new BigDecimal(2), result);
+  }
+
+  public void testBigDecimalTimesDoubleAtHalfUpBoundary() {
+    assertBigDecimalExpression(new BigDecimal("0.02"),
+        "(amount * value).setScale(2, java.math.RoundingMode.HALF_UP)", new BigDecimal("0.05"), 0.3d);
+  }
+
+  public void testBigDecimalPlusFloatUsesDecimalValue() {
+    assertBigDecimalExpression(new BigDecimal("1.3"), "amount + value", BigDecimal.ONE, 0.3f);
+  }
+
+  public void testBigDecimalPlusLongPreservesIntegerPrecision() {
+    assertBigDecimalExpression(new BigDecimal("9007199254740994"), "amount + value",
+        BigDecimal.ONE, 9007199254740993L);
+  }
+
+  public void testBigDecimalPlusBigIntegerPreservesIntegerPrecision() {
+    assertBigDecimalExpression(new BigDecimal("123456789012345678901234567891"), "amount + value",
+        BigDecimal.ONE, new BigInteger("123456789012345678901234567890"));
+  }
+
+  private void assertBigDecimalExpression(BigDecimal expected, String expression, BigDecimal amount, Number value) {
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("amount", amount);
+    vars.put("value", value);
+    assertEquals("Interpreted expression", expected, MVEL.eval(expression, vars));
+    assertEquals("Compiled expression", expected, MVEL.executeExpression(MVEL.compileExpression(expression), vars));
   }
   
   public void testIssue249() {

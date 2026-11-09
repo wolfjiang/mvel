@@ -733,7 +733,21 @@ public strictfp class MathProcessor {
       return new BigDecimal((String) in);
     }
     if (in instanceof Number) {
-      return new BigDecimal(((Number) in).doubleValue());
+      // 0.3 这类 double 用 new BigDecimal(double) 会收成略小的数，进位边界少 1 分。
+      // Double/Float 按打印出来的十进制收；整数和 BigInteger 不经过 double。
+      if (in instanceof BigInteger) {
+          return new BigDecimal((BigInteger) in);
+      }
+      if (in instanceof Double) {
+          return BigDecimal.valueOf((Double) in);
+      }
+      if (in instanceof Float) {
+          return new BigDecimal(Float.toString((Float) in));
+      }
+      if (in instanceof Long || in instanceof Integer || in instanceof Short || in instanceof Byte) {
+          return BigDecimal.valueOf(((Number) in).longValue());
+      }
+      return BigDecimal.valueOf(((Number) in).doubleValue());
     }
 
     throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass());
