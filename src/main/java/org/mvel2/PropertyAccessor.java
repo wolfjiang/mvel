@@ -559,6 +559,16 @@ public class PropertyAccessor {
   private Object getBeanProperty(Object ctx, String property)
       throws IllegalAccessException, InvocationTargetException {
 
+    // 特殊处理 Map.Entry
+    if (ctx instanceof Map.Entry) {
+      Map.Entry<?, ?> entry = (Map.Entry<?, ?>) ctx;
+      if ("key".equals(property)) {
+        return entry.getKey();
+      } else if ("value".equals(property)) {
+        return entry.getValue();
+      }
+    }
+
     if (first) {
       if ("this".equals(property)) {
         return this.ctx;

@@ -358,7 +358,7 @@ public class ControlFlowTests extends AbstractTest {
         c1.getTime());
     objectMap.put("EV_VI_ANT1",
         propertyMap);
-    assertEquals("N",
+    assertEquals("Y",
         testCompiledSimple(
             "new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'",
             null,

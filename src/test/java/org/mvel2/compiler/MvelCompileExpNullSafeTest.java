@@ -8,8 +8,6 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.mvel2.MVEL;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.SimpleValueResolver;
