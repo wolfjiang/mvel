@@ -3051,7 +3051,7 @@ private Object optimizeFieldMethodProperty(Object ctx, String property, Class<?>
         assert debug("*** Converting because desiredType(" + desiredTarget.getClass() + ") is not: " + type);
 
 
-        if (!DataConversion.canConvert(type, desiredTarget)) {
+        if (!DataConversion.canConvert(desiredTarget, type)) {
           throw new CompileException("was expecting type: " + desiredTarget.getName()
               + "; but found type: " + type.getName(), expr, st);
         }

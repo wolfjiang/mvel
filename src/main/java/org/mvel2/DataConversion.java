@@ -25,6 +25,8 @@ import org.mvel2.util.FastList;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.mvel2.util.ReflectionUtil.isAssignableFrom;
 import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
@@ -36,8 +38,8 @@ import static org.mvel2.util.ReflectionUtil.toNonPrimitiveType;
  * @see ConversionHandler
  */
 public class DataConversion {
-  private static final Map<Class, ConversionHandler> CONVERTERS
-      = new HashMap<Class, ConversionHandler>(38 * 2, 0.5f);
+  private static final ConcurrentMap<Class, ConversionHandler> CONVERTERS
+      = new ConcurrentHashMap<Class, ConversionHandler>(38 * 2, 0.5f);
 
   private interface ArrayTypeMarker {
   }
@@ -104,8 +106,9 @@ public class DataConversion {
 
   public static boolean canConvert(Class toType, Class convertFrom) {
     if (isAssignableFrom(toType, convertFrom)) return true;
-    if (CONVERTERS.containsKey(toType)) {
-      return CONVERTERS.get(toType).canConvertFrom(toNonPrimitiveType(convertFrom));
+    ConversionHandler handler = CONVERTERS.get(toType);
+    if (handler != null) {
+      return handler.canConvertFrom(toNonPrimitiveType(convertFrom));
     }
     else if (toType.isArray() && canConvert(toType.getComponentType(), convertFrom)) {
       return true;
@@ -121,13 +124,11 @@ public class DataConversion {
 
     ConversionHandler h = CONVERTERS.get(toType);
     if (h == null && toType.isArray()) {
-      ArrayHandler ah;
-      CONVERTERS.put(toType, ah = new ArrayHandler(toType));
-      return (T) ah.convertFrom(in);
+      ArrayHandler candidate = new ArrayHandler(toType);
+      h = CONVERTERS.putIfAbsent(toType, candidate);
+      if (h == null) h = candidate;
     }
-    else {
-      return (T) h.convertFrom(in);
-    }
+    return (T) h.convertFrom(in);
   }
 
   /**
